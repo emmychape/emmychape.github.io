@@ -184,3 +184,10 @@ saveBtn.onclick = () => {
   localStorage.setItem("compositions", JSON.stringify(compositions));
   alert("Composition sauvegardée dans l'archive.");
 };
+modeSelect.addEventListener("change", () => {
+  if (modeSelect.value === "forme") {
+    generateBtn.style.display = "block";
+  } else {
+    generateBtn.style.display = "none";
+  }
+});
