@@ -18,11 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const div = document.createElement("div");
     div.className = "grid-item";
 
-    // Create preview (PNG) for the grid
     const svgDoc = new DOMParser().parseFromString(comp.svg, "image/svg+xml").documentElement;
     const cloneSvg = svgDoc.cloneNode(true);
 
-    // Ensure viewBox exists
     if (!cloneSvg.getAttribute("viewBox")) {
       const width = cloneSvg.getAttribute("width") || "1000";
       const height = cloneSvg.getAttribute("height") || "1000";
@@ -36,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const blob = new Blob([serialized], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const img = new Image();
+
     img.onload = () => {
       const canvas = document.createElement("canvas");
       canvas.width = 150;
@@ -66,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const svgEl = modalSvgContainer.querySelector("svg");
       if (svgEl) {
-        // Auto-add viewBox if missing
         if (!svgEl.getAttribute("viewBox")) {
           const width = svgEl.getAttribute("width") || "1000";
           const height = svgEl.getAttribute("height") || "1000";
