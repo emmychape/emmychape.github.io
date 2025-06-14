@@ -59,67 +59,77 @@
   <script src="poemj.js"></script>
   <script>
     function makeDraggable(el) {
-      let isDragging = false, offsetX, offsetY;
+      let isDragging = false, offsetX = 0, offsetY = 0;
 
       function moveAt(x, y) {
         el.style.left = `${x - offsetX}px`;
         el.style.top = `${y - offsetY}px`;
       }
 
-      el.addEventListener('mousedown', e => {
+      // Souris
+      el.addEventListener('mousedown', (e) => {
         isDragging = true;
         offsetX = e.clientX - el.offsetLeft;
         offsetY = e.clientY - el.offsetTop;
-        document.addEventListener('mousemove', onMouse);
+        document.addEventListener('mousemove', onMouseMove);
       });
 
       document.addEventListener('mouseup', () => {
         isDragging = false;
-        document.removeEventListener('mousemove', onMouse);
+        document.removeEventListener('mousemove', onMouseMove);
       });
 
-      function onMouse(e) {
+      function onMouseMove(e) {
         if (isDragging) moveAt(e.clientX, e.clientY);
       }
 
-      el.addEventListener('touchstart', e => {
+      // Tactile
+      el.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
-          const t = e.touches[0];
+          const touch = e.touches[0];
+          offsetX = touch.clientX - el.offsetLeft;
+          offsetY = touch.clientY - el.offsetTop;
           isDragging = true;
-          offsetX = t.clientX - el.offsetLeft;
-          offsetY = t.clientY - el.offsetTop;
         }
       });
 
-      el.addEventListener('touchmove', e => {
-        if (isDragging && e.touches.length === 1) {
+      el.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isDragging) {
           e.preventDefault();
-          const t = e.touches[0];
-          moveAt(t.clientX, t.clientY);
+          const touch = e.touches[0];
+          moveAt(touch.clientX, touch.clientY);
         }
       }, { passive: false });
 
-      el.addEventListener('touchend', () => { isDragging = false; });
+      el.addEventListener('touchend', () => {
+        isDragging = false;
+      });
 
-      // Pinch zoom
-      let lastDist = null, scale = 1;
-      el.addEventListener('touchmove', e => {
+      // Pinch-to-zoom du panneau
+      let lastDistance = null;
+      let scale = 1;
+      const content = document.getElementById("panelContent");
+
+      el.addEventListener("touchmove", (e) => {
         if (e.touches.length === 2) {
           e.preventDefault();
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
-          const dist = Math.hypot(dx, dy);
-          if (lastDist) {
-            scale += (dist - lastDist)/300;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (lastDistance) {
+            let diff = distance - lastDistance;
+            scale += diff / 300;
             scale = Math.min(Math.max(scale, 0.5), 2);
-            panel.firstElementChild.style.transform = `scale(${scale})`;
+            content.style.transform = `scale(${scale})`;
           }
-          lastDist = dist;
+
+          lastDistance = distance;
         }
       }, { passive: false });
 
-      el.addEventListener('touchend', e => {
-        if (e.touches.length < 2) lastDist = null;
+      el.addEventListener("touchend", (e) => {
+        if (e.touches.length < 2) lastDistance = null;
       });
     }
 
