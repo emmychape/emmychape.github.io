@@ -15,6 +15,7 @@ let currentPoints = [];
 let drawingTimeout = null;
 let lastDrawTime = 0;
 
+// Capture des paramètres actuels
 function captureSettings() {
   return {
     text: textInput.value,
@@ -24,6 +25,7 @@ function captureSettings() {
   };
 }
 
+// Dessine le texte avec effet variation
 function drawTextOnPathWithVariation(d, settings) {
   const id = `path-${Date.now()}`;
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -54,22 +56,24 @@ function drawTextOnPathWithVariation(d, settings) {
   svg.appendChild(text);
 }
 
+// Génération de formes prédéfinies
 function generateShape(type) {
   const { width, height } = svg.getBoundingClientRect();
   const cx = Math.random() * width;
   const cy = Math.random() * height;
-
+  
   switch (type) {
     case "serpent":
+      // serpentine
       let d = "";
       let x = cx - 150;
       let y = cy - 100;
-      let direction = 1;
+      let dir = 1;
       for (let i = 0; i < 12; i++) {
         d += i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-        x += 100 * direction;
+        x += 100 * dir;
         if (x > width - 100 || x < 100) {
-          direction *= -1;
+          dir *= -1;
           y += 80;
         }
       }
@@ -78,9 +82,9 @@ function generateShape(type) {
       let spiral = "";
       for (let i = 0, a = 0; i < 300; i++) {
         const r = 0.5 * i;
-        const x = cx + r * Math.cos(a);
-        const y = cy + r * Math.sin(a);
-        spiral += i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+        const xx = cx + r * Math.cos(a);
+        const yy = cy + r * Math.sin(a);
+        spiral += i === 0 ? `M ${xx} ${yy}` : `L ${xx} ${yy}`;
         a += 0.15;
       }
       return spiral;
@@ -108,7 +112,7 @@ function generateShape(type) {
   }
 }
 
-// Dessin avec la souris ou le doigt
+// Fonction de dessin (souris ou doigt)
 function handleDraw(x, y) {
   const now = Date.now();
   if (now - lastDrawTime < 30) return;
@@ -136,6 +140,7 @@ function handleDraw(x, y) {
   }, 300);
 }
 
+// Événements de dessin
 svg.addEventListener("mousemove", (e) => {
   if (modeSelect.value !== "souris") return;
   const rect = svg.getBoundingClientRect();
@@ -150,21 +155,19 @@ svg.addEventListener("touchmove", (e) => {
   handleDraw(touch.clientX - rect.left, touch.clientY - rect.top);
 }, { passive: false });
 
-// Générer une forme
+// Boutons actions
 generateBtn.onclick = () => {
   if (modeSelect.value !== "forme") return;
   const d = generateShape(shapeSelect.value);
   drawTextOnPathWithVariation(d, captureSettings());
 };
 
-// Effacer
 clearBtn.onclick = () => {
   svg.innerHTML = '';
   currentPoints = [];
   currentPathElement = null;
 };
 
-// Exporter
 exportBtn.onclick = () => {
   const svgData = new XMLSerializer().serializeToString(svg);
   const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
@@ -176,7 +179,6 @@ exportBtn.onclick = () => {
   URL.revokeObjectURL(url);
 };
 
-// Sauvegarder
 saveBtn.onclick = () => {
   const svgData = new XMLSerializer().serializeToString(svg);
   const compositions = JSON.parse(localStorage.getItem("compositions") || "[]");
@@ -188,7 +190,6 @@ saveBtn.onclick = () => {
   alert("Composition sauvegardée dans l'archive.");
 };
 
-// Affichage du bouton générer
 modeSelect.addEventListener("change", () => {
   generateBtn.style.display = modeSelect.value === "forme" ? "block" : "none";
 });
