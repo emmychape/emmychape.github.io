@@ -9,45 +9,46 @@
 </head>
 <body>
   <div id="panel" class="draggable">
-  <div id="panelContent">
-    <h2>Poésie Visuelle</h2>
+    <div id="panelContent">
+      <h2>Poésie Visuelle</h2>
 
-    <label>Texte :</label>
-    <textarea id="textInput">Écrit ici...</textarea>
+      <label>Texte :</label>
+      <textarea id="textInput">Écrit ici...</textarea>
 
-    <label>Mode :</label>
-    <select id="modeSelect">
-      <option value="souris">Souris</option>
-      <option value="forme">Forme aléatoire</option>
-    </select>
-    <button id="generateBtn" style="display: none">Générer</button>
+      <label>Mode :</label>
+      <select id="modeSelect">
+        <option value="souris">Souris</option>
+        <option value="forme">Forme aléatoire</option>
+      </select>
+      <button id="generateBtn" style="display: none">Générer</button>
 
-    <label>Forme :</label>
-    <select id="shapeSelect">
-      <option value="serpent">Serpent</option>
-      <option value="spirale">Spirale</option>
-      <option value="cercle">Cercle</option>
-      <option value="rectangle">Rectangle</option>
-      <option value="vague">Vague</option>
-      <option value="coeur">Cœur</option>
-      <option value="etoile">Étoile</option>
-      <option value="infini">Infini</option>
-      <option value="zigzag">Zigzag</option>
-    </select>
+      <label>Forme :</label>
+      <select id="shapeSelect">
+        <option value="serpent">Serpent</option>
+        <option value="spirale">Spirale</option>
+        <option value="cercle">Cercle</option>
+        <option value="rectangle">Rectangle</option>
+        <option value="vague">Vague</option>
+        <option value="coeur">Cœur</option>
+        <option value="etoile">Étoile</option>
+        <option value="infini">Infini</option>
+        <option value="zigzag">Zigzag</option>
+      </select>
 
-    <label>Couleur :</label>
-    <input type="color" id="textColor" value="#000000" />
+      <label>Couleur :</label>
+      <input type="color" id="textColor" value="#000000" />
 
-    <label>Taille du texte :</label>
-    <input type="number" id="fontSize" value="24" />
+      <label>Taille du texte :</label>
+      <input type="number" id="fontSize" value="24" />
 
-    <label>Espacement lettres :</label>
-    <input type="number" id="letterSpacing" value="2" />
+      <label>Espacement lettres :</label>
+      <input type="number" id="letterSpacing" value="2" />
 
-    <button id="clearBtn">Effacer</button>
-    <button id="exportBtn">Exporter SVG</button>
-    <button id="saveBtn">Sauvegarder</button>
-    <a href="archive.html" id="archiveLink">Voir l'archive</a>
+      <button id="clearBtn">Effacer</button>
+      <button id="exportBtn">Exporter SVG</button>
+      <button id="saveBtn">Sauvegarder</button>
+      <a href="archive.html" id="archiveLink">Voir l'archive</a>
+    </div>
   </div>
 
   <svg id="svgCanvas"
@@ -59,21 +60,27 @@
   <script>
     function makeDraggable(el) {
       let isDragging = false, offsetX, offsetY;
+
       function moveAt(x, y) {
         el.style.left = `${x - offsetX}px`;
         el.style.top = `${y - offsetY}px`;
       }
+
       el.addEventListener('mousedown', e => {
         isDragging = true;
         offsetX = e.clientX - el.offsetLeft;
         offsetY = e.clientY - el.offsetTop;
         document.addEventListener('mousemove', onMouse);
       });
+
       document.addEventListener('mouseup', () => {
         isDragging = false;
         document.removeEventListener('mousemove', onMouse);
       });
-      function onMouse(e) { if (isDragging) moveAt(e.clientX, e.clientY); }
+
+      function onMouse(e) {
+        if (isDragging) moveAt(e.clientX, e.clientY);
+      }
 
       el.addEventListener('touchstart', e => {
         if (e.touches.length === 1) {
@@ -83,6 +90,7 @@
           offsetY = t.clientY - el.offsetTop;
         }
       });
+
       el.addEventListener('touchmove', e => {
         if (isDragging && e.touches.length === 1) {
           e.preventDefault();
@@ -90,9 +98,10 @@
           moveAt(t.clientX, t.clientY);
         }
       }, { passive: false });
+
       el.addEventListener('touchend', () => { isDragging = false; });
 
-      // Pinch-zoom
+      // Pinch zoom
       let lastDist = null, scale = 1;
       el.addEventListener('touchmove', e => {
         if (e.touches.length === 2) {
@@ -103,11 +112,12 @@
           if (lastDist) {
             scale += (dist - lastDist)/300;
             scale = Math.min(Math.max(scale, 0.5), 2);
-           panel.firstElementChild.style.transform = `scale(${scale})`;
+            panel.firstElementChild.style.transform = `scale(${scale})`;
           }
           lastDist = dist;
         }
       }, { passive: false });
+
       el.addEventListener('touchend', e => {
         if (e.touches.length < 2) lastDist = null;
       });
