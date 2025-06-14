@@ -9,6 +9,7 @@
 </head>
 <body>
   <div id="panel" class="draggable">
+  <div id="panelContent">
     <h2>Poésie Visuelle</h2>
 
     <label>Texte :</label>
@@ -102,7 +103,7 @@
           if (lastDist) {
             scale += (dist - lastDist)/300;
             scale = Math.min(Math.max(scale, 0.5), 2);
-            el.style.transform = `scale(${scale})`;
+           panel.firstElementChild.style.transform = `scale(${scale})`;
           }
           lastDist = dist;
         }
