@@ -62,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       modalSvgContainer.innerHTML = comp.svg;
-
       const svgEl = modalSvgContainer.querySelector("svg");
       if (svgEl) {
         if (!svgEl.getAttribute("viewBox")) {
@@ -74,8 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
         svgEl.removeAttribute("width");
         svgEl.removeAttribute("height");
         svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
         svgEl.style.width = "100%";
         svgEl.style.height = "auto";
+        svgEl.style.maxWidth = "100%";
+        svgEl.style.maxHeight = "100%";
         svgEl.style.display = "block";
         svgEl.style.margin = "auto";
       }
