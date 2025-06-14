@@ -6,13 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://api.fontshare.com/v2/css?f[]=abc-diatype@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  <style>
-    #panel {
-      touch-action: none;
-      transform-origin: bottom left;
-      transition: transform 0.2s ease-out;
-    }
-  </style>
 </head>
 <body>
   <div id="panel" class="draggable">
@@ -26,7 +19,6 @@
       <option value="souris">Souris</option>
       <option value="forme">Forme aléatoire</option>
     </select>
-
     <button id="generateBtn" style="display: none">Générer</button>
 
     <label>Forme :</label>
@@ -65,81 +57,63 @@
   <script src="poemj.js"></script>
   <script>
     function makeDraggable(el) {
-      let isDragging = false, offsetX = 0, offsetY = 0;
-
+      let isDragging = false, offsetX, offsetY;
       function moveAt(x, y) {
         el.style.left = `${x - offsetX}px`;
         el.style.top = `${y - offsetY}px`;
       }
-
-      // Souris
-      el.addEventListener('mousedown', (e) => {
+      el.addEventListener('mousedown', e => {
         isDragging = true;
         offsetX = e.clientX - el.offsetLeft;
         offsetY = e.clientY - el.offsetTop;
-        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mousemove', onMouse);
       });
-
       document.addEventListener('mouseup', () => {
         isDragging = false;
-        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mousemove', onMouse);
       });
+      function onMouse(e) { if (isDragging) moveAt(e.clientX, e.clientY); }
 
-      function onMouseMove(e) {
-        if (isDragging) moveAt(e.clientX, e.clientY);
-      }
-
-      // Tactile
-      el.addEventListener('touchstart', (e) => {
+      el.addEventListener('touchstart', e => {
         if (e.touches.length === 1) {
-          const touch = e.touches[0];
-          offsetX = touch.clientX - el.offsetLeft;
-          offsetY = touch.clientY - el.offsetTop;
+          const t = e.touches[0];
           isDragging = true;
+          offsetX = t.clientX - el.offsetLeft;
+          offsetY = t.clientY - el.offsetTop;
         }
       });
-
-      el.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 1 && isDragging) {
-          const touch = e.touches[0];
-          moveAt(touch.clientX, touch.clientY);
+      el.addEventListener('touchmove', e => {
+        if (isDragging && e.touches.length === 1) {
+          e.preventDefault();
+          const t = e.touches[0];
+          moveAt(t.clientX, t.clientY);
         }
       }, { passive: false });
+      el.addEventListener('touchend', () => { isDragging = false; });
 
-      el.addEventListener('touchend', () => {
-        isDragging = false;
+      // Pinch-zoom
+      let lastDist = null, scale = 1;
+      el.addEventListener('touchmove', e => {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.hypot(dx, dy);
+          if (lastDist) {
+            scale += (dist - lastDist)/300;
+            scale = Math.min(Math.max(scale, 0.5), 2);
+            el.style.transform = `scale(${scale})`;
+          }
+          lastDist = dist;
+        }
+      }, { passive: false });
+      el.addEventListener('touchend', e => {
+        if (e.touches.length < 2) lastDist = null;
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       makeDraggable(document.getElementById('panel'));
-    });
-
-    // Pinch-to-zoom du panneau
-    let lastDistance = null;
-    let scale = 1;
-    const panel = document.getElementById("panel");
-
-    panel.addEventListener("touchmove", (e) => {
-      if (e.touches.length === 2) {
-        e.preventDefault();
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (lastDistance) {
-          let diff = distance - lastDistance;
-          scale += diff / 300;
-          scale = Math.min(Math.max(scale, 0.5), 2);
-          panel.style.transform = `scale(${scale})`;
-        }
-
-        lastDistance = distance;
-      }
-    }, { passive: false });
-
-    panel.addEventListener("touchend", (e) => {
-      if (e.touches.length < 2) lastDistance = null;
     });
   </script>
 </body>
