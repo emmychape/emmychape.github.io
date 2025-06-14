@@ -1,67 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Poésie Visuelle</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://api.fontshare.com/v2/css?f[]=abc-diatype@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    #panel {
-      touch-action: none; /* Nécessaire pour activer le pinch */
-      transform-origin: bottom left;
-      transition: transform 0.2s ease-out;
-    }
-  </style>
-</head>
-<body>
-  <div id="panel" class="draggable">
-    <h2>Poésie Visuelle</h2>
-
-    <label>Texte :</label>
-    <textarea id="textInput">Écrit ici...</textarea>
-
-    <label>Mode :</label>
-    <select id="modeSelect">
-      <option value="souris">Souris</option>
-      <option value="forme">Forme aléatoire</option>
-    </select>
-
-    <button id="generateBtn" style="display: none">Générer</button>
-
-    <label>Forme :</label>
-    <select id="shapeSelect">
-      <option value="serpent">Serpent</option>
-      <option value="spirale">Spirale</option>
-      <option value="cercle">Cercle</option>
-      <option value="rectangle">Rectangle</option>
-      <option value="vague">Vague</option>
-      <option value="coeur">Cœur</option>
-      <option value="etoile">Étoile</option>
-      <option value="infini">Infini</option>
-      <option value="zigzag">Zigzag</option>
-    </select>
-
-    <label>Couleur :</label>
-    <input type="color" id="textColor" value="#000000" />
-
-    <label>Taille du texte :</label>
-    <input type="number" id="fontSize" value="24" />
-
-    <label>Espacement lettres :</label>
-    <input type="number" id="letterSpacing" value="2" />
-
-    <button id="clearBtn">Effacer</button>
-    <button id="exportBtn">Exporter SVG</button>
-    <button id="saveBtn">Sauvegarder</button>
-    <a href="archive.html" id="archiveLink">Voir l'archive</a>
-  </div>
-
-  <svg id="svgCanvas"
-       xmlns="http://www.w3.org/2000/svg"
-       xmlns:xlink="http://www.w3.org/1999/xlink"
-       preserveAspectRatio="xMidYMid meet"></svg>
-
   <script src="poemj.js"></script>
   <script>
     function makeDraggable(el) {
@@ -72,6 +8,7 @@
         el.style.top = `${y - offsetY}px`;
       }
 
+      // Souris
       el.addEventListener('mousedown', (e) => {
         isDragging = true;
         offsetX = e.clientX - el.offsetLeft;
@@ -88,26 +25,33 @@
         if (isDragging) moveAt(e.clientX, e.clientY);
       }
 
-      // Mobile (touch)
+      // Tactile
       el.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0];
-        offsetX = touch.clientX - el.offsetLeft;
-        offsetY = touch.clientY - el.offsetTop;
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          offsetX = touch.clientX - el.offsetLeft;
+          offsetY = touch.clientY - el.offsetTop;
+          isDragging = true;
+        }
       });
 
       el.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 1) {
+        if (e.touches.length === 1 && isDragging) {
           const touch = e.touches[0];
           moveAt(touch.clientX, touch.clientY);
         }
       }, { passive: false });
+
+      el.addEventListener('touchend', () => {
+        isDragging = false;
+      });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       makeDraggable(document.getElementById('panel'));
     });
 
-    // Pinch zoom (agrandir/réduire le panneau)
+    // Pinch zoom du panneau
     let lastDistance = null;
     let scale = 1;
     const panel = document.getElementById("panel");
@@ -121,8 +65,8 @@
 
         if (lastDistance) {
           let diff = distance - lastDistance;
-          scale += diff / 300; // sensibilité
-          scale = Math.min(Math.max(scale, 0.5), 2); // limite entre 50% et 200%
+          scale += diff / 300;
+          scale = Math.min(Math.max(scale, 0.5), 2);
           panel.style.transform = `scale(${scale})`;
         }
 
@@ -131,10 +75,6 @@
     }, { passive: false });
 
     panel.addEventListener("touchend", (e) => {
-      if (e.touches.length < 2) {
-        lastDistance = null;
-      }
+      if (e.touches.length < 2) lastDistance = null;
     });
   </script>
-</body>
-</html>
