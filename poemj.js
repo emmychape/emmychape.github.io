@@ -1,4 +1,3 @@
-// Sélection des éléments DOM
 const svg = document.getElementById("svgCanvas");
 const modeSelect = document.getElementById("modeSelect");
 const shapeSelect = document.getElementById("shapeSelect");
@@ -16,7 +15,6 @@ let currentPoints = [];
 let drawingTimeout = null;
 let lastDrawTime = 0;
 
-// Fonction pour capturer les paramètres actuels
 function captureSettings() {
   return {
     text: textInput.value,
@@ -26,7 +24,6 @@ function captureSettings() {
   };
 }
 
-// Fonction pour dessiner le texte le long d'un chemin avec des variations
 function drawTextOnPathWithVariation(d, settings) {
   const id = `path-${Date.now()}`;
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -57,7 +54,6 @@ function drawTextOnPathWithVariation(d, settings) {
   svg.appendChild(text);
 }
 
-// Fonction pour générer différentes formes
 function generateShape(type) {
   const { width, height } = svg.getBoundingClientRect();
   const cx = Math.random() * width;
@@ -112,17 +108,12 @@ function generateShape(type) {
   }
 }
 
-// Événement pour le mode "souris"
-svg.addEventListener("mousemove", (e) => {
-  if (modeSelect.value !== "souris") return;
-
+// Dessin avec la souris ou le doigt
+function handleDraw(x, y) {
   const now = Date.now();
-  if (now - lastDrawTime < 30) return; // Réduit la fréquence
+  if (now - lastDrawTime < 30) return;
   lastDrawTime = now;
 
-  const rect = svg.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
   currentPoints.push({ x, y });
 
   if (!currentPathElement) {
@@ -143,37 +134,49 @@ svg.addEventListener("mousemove", (e) => {
     currentPathElement = null;
     currentPoints = [];
   }, 300);
+}
+
+svg.addEventListener("mousemove", (e) => {
+  if (modeSelect.value !== "souris") return;
+  const rect = svg.getBoundingClientRect();
+  handleDraw(e.clientX - rect.left, e.clientY - rect.top);
 });
 
-// Bouton "Générer"
+svg.addEventListener("touchmove", (e) => {
+  if (modeSelect.value !== "souris") return;
+  e.preventDefault();
+  const rect = svg.getBoundingClientRect();
+  const touch = e.touches[0];
+  handleDraw(touch.clientX - rect.left, touch.clientY - rect.top);
+}, { passive: false });
+
+// Générer une forme
 generateBtn.onclick = () => {
   if (modeSelect.value !== "forme") return;
   const d = generateShape(shapeSelect.value);
   drawTextOnPathWithVariation(d, captureSettings());
 };
 
-// Bouton "Effacer"
+// Effacer
 clearBtn.onclick = () => {
   svg.innerHTML = '';
   currentPoints = [];
   currentPathElement = null;
 };
 
-// Bouton "Exporter SVG"
+// Exporter
 exportBtn.onclick = () => {
   const svgData = new XMLSerializer().serializeToString(svg);
   const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement("a");
   link.href = url;
   link.download = "poesie-visuelle.svg";
   link.click();
-
   URL.revokeObjectURL(url);
 };
 
-// Bouton "Sauvegarder"
+// Sauvegarder
 saveBtn.onclick = () => {
   const svgData = new XMLSerializer().serializeToString(svg);
   const compositions = JSON.parse(localStorage.getItem("compositions") || "[]");
@@ -184,10 +187,8 @@ saveBtn.onclick = () => {
   localStorage.setItem("compositions", JSON.stringify(compositions));
   alert("Composition sauvegardée dans l'archive.");
 };
+
+// Affichage du bouton générer
 modeSelect.addEventListener("change", () => {
-  if (modeSelect.value === "forme") {
-    generateBtn.style.display = "block";
-  } else {
-    generateBtn.style.display = "none";
-  }
+  generateBtn.style.display = modeSelect.value === "forme" ? "block" : "none";
 });
