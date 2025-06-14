@@ -1,194 +1,111 @@
-const svg = document.getElementById("svgCanvas");
-const modeSelect = document.getElementById("modeSelect");
-const shapeSelect = document.getElementById("shapeSelect");
-const textInput = document.getElementById("textInput");
-const textColor = document.getElementById("textColor");
-const fontSize = document.getElementById("fontSize");
-const letterSpacing = document.getElementById("letterSpacing");
-const generateBtn = document.getElementById("generateBtn");
-const clearBtn = document.getElementById("clearBtn");
-const exportBtn = document.getElementById("exportBtn");
-const saveBtn = document.getElementById("saveBtn");
+document.addEventListener("DOMContentLoaded", () => {
+  const archiveGrid = document.getElementById("archiveGrid");
+  const modal = document.getElementById("modal");
+  const modalSvgContainer = document.getElementById("modalSvgContainer");
+  const closeModal = document.getElementById("closeModal");
+  const exportModalBtn = document.getElementById("exportModalBtn");
+  const deleteBtn = document.getElementById("deleteModeBtn");
 
-let currentPathElement = null;
-let currentPoints = [];
-let drawingTimeout = null;
-let lastDrawTime = 0;
+  let deleteMode = false;
+  let compositions = JSON.parse(localStorage.getItem("compositions") || "[]");
 
-function captureSettings() {
-  return {
-    text: textInput.value,
-    color: textColor.value,
-    size: parseFloat(fontSize.value),
-    spacing: letterSpacing.value
-  };
-}
-
-function drawTextOnPathWithVariation(d, settings) {
-  const id = `path-${Date.now()}`;
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", d);
-  path.setAttribute("id", id);
-  path.setAttribute("fill", "none");
-  svg.appendChild(path);
-
-  const baseText = (settings.text + " ").repeat(100).slice(0, 500);
-
-  const textPath = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
-  textPath.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", `#${id}`);
-  textPath.setAttribute("startOffset", "0%");
-
-  for (let i = 0; i < baseText.length; i += 2) {
-    const span = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-    const scale = 0.8 + Math.random() * 0.6;
-    span.setAttribute("font-size", (settings.size * scale).toFixed(1));
-    span.textContent = baseText[i] + (baseText[i + 1] || '');
-    textPath.appendChild(span);
+  if (!compositions.length) {
+    archiveGrid.innerHTML = "<p style='text-align:center'>Aucune composition sauvegardée</p>";
+    return;
   }
 
-  const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  text.setAttribute("fill", settings.color);
-  text.setAttribute("letter-spacing", settings.spacing);
-  text.setAttribute("font-family", "ABC Diatype, sans-serif");
-  text.appendChild(textPath);
-  svg.appendChild(text);
-}
+  compositions.forEach((comp, index) => {
+    const div = document.createElement("div");
+    div.className = "grid-item";
 
-function generateShape(type) {
-  const { width, height } = svg.getBoundingClientRect();
-  const cx = Math.random() * width;
-  const cy = Math.random() * height;
+    // Crée un aperçu image PNG à partir du SVG
+    const svgDoc = new DOMParser().parseFromString(comp.svg, "image/svg+xml").documentElement;
+    const cloneSvg = svgDoc.cloneNode(true);
 
-  switch (type) {
-    case "serpent":
-      let d = "";
-      let x = cx - 150;
-      let y = cy - 100;
-      let direction = 1;
-      for (let i = 0; i < 12; i++) {
-        d += i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-        x += 100 * direction;
-        if (x > width - 100 || x < 100) {
-          direction *= -1;
-          y += 80;
+    if (!cloneSvg.getAttribute("viewBox")) {
+      const width = cloneSvg.getAttribute("width") || "1000";
+      const height = cloneSvg.getAttribute("height") || "1000";
+      cloneSvg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    }
+
+    cloneSvg.setAttribute("width", "300");
+    cloneSvg.setAttribute("height", "300");
+
+    const data = new XMLSerializer().serializeToString(cloneSvg);
+    const blob = new Blob([data], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 150;
+      canvas.height = 150;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const preview = new Image();
+      preview.src = canvas.toDataURL("image/png");
+      preview.style.width = "100%";
+      preview.style.height = "100%";
+      preview.alt = "Aperçu";
+      div.appendChild(preview);
+    };
+    img.src = url;
+
+    div.addEventListener("click", () => {
+      if (deleteMode) {
+        if (confirm("Supprimer cette composition ?")) {
+          compositions.splice(index, 1);
+          localStorage.setItem("compositions", JSON.stringify(compositions));
+          location.reload();
         }
+        return;
       }
-      return d;
-    case "spirale":
-      let spiral = "";
-      for (let i = 0, a = 0; i < 300; i++) {
-        const r = 0.5 * i;
-        const x = cx + r * Math.cos(a);
-        const y = cy + r * Math.sin(a);
-        spiral += i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-        a += 0.15;
+
+      modalSvgContainer.innerHTML = comp.svg;
+      const svgEl = modalSvgContainer.querySelector("svg");
+
+      if (svgEl) {
+        if (!svgEl.getAttribute("viewBox")) {
+          const w = svgEl.getAttribute("width") || 1000;
+          const h = svgEl.getAttribute("height") || 1000;
+          svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        }
+
+        svgEl.removeAttribute("width");
+        svgEl.removeAttribute("height");
+        svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+        svgEl.style.width = "100%";
+        svgEl.style.height = "100%";
+        svgEl.style.maxWidth = "100%";
+        svgEl.style.maxHeight = "100%";
+        svgEl.style.display = "block";
+        svgEl.style.margin = "auto";
       }
-      return spiral;
-    case "cercle":
-      return `M ${cx + 100} ${cy} A 100 100 0 1 1 ${cx - 100} ${cy} A 100 100 0 1 1 ${cx + 100} ${cy}`;
-    case "rectangle":
-      return `M ${cx - 100} ${cy - 50} H ${cx + 100} V ${cy + 50} H ${cx - 100} Z`;
-    case "vague":
-      return `M ${cx - 200} ${cy} Q ${cx - 150} ${cy - 40}, ${cx - 100} ${cy} T ${cx} ${cy} T ${cx + 100} ${cy} T ${cx + 200} ${cy}`;
-    case "coeur":
-      return `M ${cx} ${cy} C ${cx - 50} ${cy - 80}, ${cx - 150} ${cy - 10}, ${cx} ${cy + 100} C ${cx + 150} ${cy - 10}, ${cx + 50} ${cy - 80}, ${cx} ${cy}`;
-    case "etoile":
-      return `M ${cx} ${cy - 100} L ${cx + 30} ${cy - 30} L ${cx + 100} ${cy - 30} L ${cx + 50} ${cy + 20}
-              L ${cx + 70} ${cy + 100} L ${cx} ${cy + 50} L ${cx - 70} ${cy + 100} L ${cx - 50} ${cy + 20}
-              L ${cx - 100} ${cy - 30} L ${cx - 30} ${cy - 30} Z`;
-    case "infini":
-      return `M ${cx - 100} ${cy} C ${cx - 150} ${cy - 50}, ${cx - 50} ${cy - 50}, ${cx} ${cy}
-              C ${cx + 50} ${cy + 50}, ${cx + 150} ${cy + 50}, ${cx + 100} ${cy}
-              C ${cx + 50} ${cy - 50}, ${cx - 50} ${cy + 50}, ${cx - 100} ${cy}`;
-    case "zigzag":
-      return `M ${cx - 100} ${cy} L ${cx - 75} ${cy - 40} L ${cx - 50} ${cy} L ${cx - 25} ${cy - 40}
-              L ${cx} ${cy} L ${cx + 25} ${cy - 40} L ${cx + 50} ${cy}`;
-    default:
-      return "";
-  }
-}
 
-// Dessin avec la souris ou le doigt
-function handleDraw(x, y) {
-  const now = Date.now();
-  if (now - lastDrawTime < 30) return;
-  lastDrawTime = now;
+      modal.classList.remove("hidden");
 
-  currentPoints.push({ x, y });
+      exportModalBtn.onclick = () => {
+        const blob2 = new Blob([comp.svg], { type: "image/svg+xml" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob2);
+        link.download = `composition-${index + 1}.svg`;
+        link.click();
+      };
+    });
 
-  if (!currentPathElement) {
-    currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    currentPathElement.setAttribute("fill", "none");
-    currentPathElement.setAttribute("stroke", "rgba(0,0,0,0.1)");
-    svg.appendChild(currentPathElement);
-  }
-
-  const d = `M ${currentPoints.map(p => `${p.x},${p.y}`).join(" L ")}`;
-  currentPathElement.setAttribute("d", d);
-
-  clearTimeout(drawingTimeout);
-  drawingTimeout = setTimeout(() => {
-    const finalD = currentPathElement.getAttribute("d");
-    currentPathElement.remove();
-    drawTextOnPathWithVariation(finalD, captureSettings());
-    currentPathElement = null;
-    currentPoints = [];
-  }, 300);
-}
-
-svg.addEventListener("mousemove", (e) => {
-  if (modeSelect.value !== "souris") return;
-  const rect = svg.getBoundingClientRect();
-  handleDraw(e.clientX - rect.left, e.clientY - rect.top);
-});
-
-svg.addEventListener("touchmove", (e) => {
-  if (modeSelect.value !== "souris") return;
-  e.preventDefault();
-  const rect = svg.getBoundingClientRect();
-  const touch = e.touches[0];
-  handleDraw(touch.clientX - rect.left, touch.clientY - rect.top);
-}, { passive: false });
-
-// Générer une forme
-generateBtn.onclick = () => {
-  if (modeSelect.value !== "forme") return;
-  const d = generateShape(shapeSelect.value);
-  drawTextOnPathWithVariation(d, captureSettings());
-};
-
-// Effacer
-clearBtn.onclick = () => {
-  svg.innerHTML = '';
-  currentPoints = [];
-  currentPathElement = null;
-};
-
-// Exporter
-exportBtn.onclick = () => {
-  const svgData = new XMLSerializer().serializeToString(svg);
-  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "poesie-visuelle.svg";
-  link.click();
-  URL.revokeObjectURL(url);
-};
-
-// Sauvegarder
-saveBtn.onclick = () => {
-  const svgData = new XMLSerializer().serializeToString(svg);
-  const compositions = JSON.parse(localStorage.getItem("compositions") || "[]");
-  compositions.push({
-    svg: svgData,
-    timestamp: Date.now()
+    archiveGrid.appendChild(div);
   });
-  localStorage.setItem("compositions", JSON.stringify(compositions));
-  alert("Composition sauvegardée dans l'archive.");
-};
 
-// Affichage du bouton générer
-modeSelect.addEventListener("change", () => {
-  generateBtn.style.display = modeSelect.value === "forme" ? "block" : "none";
+  closeModal.onclick = () => {
+    modal.classList.add("hidden");
+    modalSvgContainer.innerHTML = "";
+  };
+
+  deleteBtn.onclick = () => {
+    deleteMode = !deleteMode;
+    document.body.classList.toggle("delete-mode", deleteMode);
+  };
 });
