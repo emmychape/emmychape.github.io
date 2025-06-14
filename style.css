@@ -106,7 +106,48 @@ body.delete-mode .grid-item { opacity:.8; outline:2px dashed red; }
     padding:16px; box-shadow:0 -2px 10px rgba(0,0,0,0.15);
     overflow-y:auto; max-height:80vh;
   }
+  body {
+  padding-bottom: 100px; /* Espace pour le panneau réduit */
+}
+
+@media (max-width:768px) {
+  #panel {
+    max-height: calc(80vh - 20px); /* Laisse de la place pour les boutons */
+  }
+}
   #panel button { width:100%; margin-top:10px; }
   .grid-container { padding:10px; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); }
   .modal-content { padding:10px; }
+}
+.modal-content {
+  pointer-events: none; /* Permet de laisser passer les clics aux enfants seulement */
+}
+.modal-close,
+.export-btn {
+  pointer-events: auto; /* Le bouton de fermeture et export reprennent les clics */
+  z-index: 1010;
+}
+/* ===========================
+  Modal : clique sur la croix possible
+=========================== */
+.modal-content {
+  pointer-events: none;
+}
+.modal-close,
+.export-btn {
+  pointer-events: auto;
+  z-index: 1010;
+}
+
+/* ===========================
+  Mobile: éviter de couper le panneau
+=========================== */
+body {
+  padding-bottom: 100px;
+}
+
+@media (max-width:768px) {
+  #panel {
+    max-height: calc(80vh - 20px);
+  }
 }
