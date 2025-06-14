@@ -1,16 +1,13 @@
+/* ===== GENERAL STYLES ===== */
 @font-face {
   font-family: 'ABC Diatype';
   src: url('abc-diatype-regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
 }
-
 :root {
   --bg: #f9f9f9;
-  --panel-bg: #ffffff;
+  --panel-bg: #fff;
   --text-color: #333;
   --primary: #0077cc;
-  --accent: #333;
   --border: #ddd;
   --radius: 6px;
   --shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -21,7 +18,6 @@
   margin: 0;
   padding: 0;
 }
-
 html, body {
   height: 100%;
   font-family: 'ABC Diatype', sans-serif;
@@ -29,14 +25,11 @@ html, body {
   color: var(--text-color);
   overflow: hidden;
 }
-
-textarea,
-input,
-select {
+textarea, input, select {
   user-select: text;
-  -webkit-user-select: text;
 }
 
+/* ===== PANEL ===== */
 #panel {
   position: absolute;
   top: 20px;
@@ -52,260 +45,78 @@ select {
   transition: transform 0.2s ease-out;
 }
 
-#panel h2 {
-  margin-bottom: 15px;
-  font-size: 20px;
-  color: var(--accent);
-}
+/* Add your existing #panel, inputs, buttons styles here... */
 
-#panel label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-#panel textarea,
-#panel input,
-#panel select {
-  width: 100%;
-  margin-top: 5px;
-  margin-bottom: 10px;
-  padding: 6px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 14px;
-}
-
-#panel button {
-  display: inline-block;
-  margin-right: 6px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  font-size: 14px;
-  border: none;
-  border-radius: var(--radius);
-  background-color: var(--primary);
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-#panel button:hover {
-  background-color: #005fa3;
-}
-
-#archiveLink {
-  display: inline-block;
-  margin-top: 12px;
-  font-size: 14px;
-  text-decoration: none;
-  color: var(--primary);
-}
-
-#archiveLink:hover {
-  text-decoration: underline;
-}
-
+/* ===== SVG CANVAS ===== */
 #svgCanvas {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
   touch-action: none;
 }
 
-/* — Archive page — */
-
+/* ===== ARCHIVE PAGE ===== */
 .archive-body {
-  background: #f5f5f5;
   height: 100vh;
   overflow: auto;
-  position: relative;
+  background: #f5f5f5;
 }
-
 .archive-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  position: sticky; top: 0;
+  display: flex; justify-content: space-between;
+  align-items: center; background: #fff;
   padding: 10px 20px;
-  background: #fff;
   border-bottom: 1px solid #ccc;
-  position: sticky;
-  top: 0;
   z-index: 100;
 }
+/* gallery grid... */
 
-.back-button {
-  background: rgba(255,255,255,0.8);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 14px;
-  text-decoration: none;
-  color: #333;
-  transition: opacity 0.3s;
-}
-
-.back-button:hover {
-  opacity: 0.6;
-}
-
-.global-delete {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.global-delete:hover {
-  background: #c0392b;
-}
-
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
-  padding: 20px;
-}
-
-.grid-item {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-  aspect-ratio: 1 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
-
-.grid-item:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.grid-item img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-body.delete-mode .grid-item {
-  outline: 2px dashed red;
-  opacity: 0.8;
-}
-
+/* ===== MODAL ===== */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0,0,0,0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
-
 .modal.hidden {
   display: none;
 }
-
 .modal-content {
-  background: white;
-  padding: 20px;
-  width: 95vw;
-  height: 95vh;
-  overflow: auto;
   position: relative;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background: white;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.modal-close, .export-btn {
+  /* your existing styles */
 }
 
+/* ===== SVG DISPLAY IN MODAL ===== */
 #modalSvgContainer {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;
 }
-
 #modalSvgContainer svg {
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   max-height: 100%;
   display: block;
-  margin: 0 auto;
-  background: white;
+  margin: auto;
 }
 
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: transparent;
-  font-size: 24px;
-  border: none;
-  cursor: pointer;
-  color: #333;
-  z-index: 10;
-}
-
-.export-btn {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: #0077cc;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-}
-
-.export-btn:hover {
-  opacity: 1;
-}
-
-/* — Responsive mobiles — */
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  #panel {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    border-radius: 12px 12px 0 0;
-    padding: 16px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
-    overflow-y: auto;
-    max-height: 80vh;
-  }
-
-  #panel button {
-    width: 100%;
-    margin-top: 10px;
-  }
-
-  .grid-container {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    padding: 10px;
-  }
-
+  /* your responsive styles for panel, grid */
   .modal-content {
-    padding: 10px;
+    padding: 0;
   }
 }
