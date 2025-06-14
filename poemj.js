@@ -10,12 +10,8 @@ const clearBtn = document.getElementById("clearBtn");
 const exportBtn = document.getElementById("exportBtn");
 const saveBtn = document.getElementById("saveBtn");
 
-let currentPathElement = null;
-let currentPoints = [];
-let drawingTimeout = null;
-let lastDrawTime = 0;
+let currentPathElement = null, currentPoints = [], drawingTimeout = null, lastDrawTime = 0;
 
-// Capture des paramètres actuels
 function captureSettings() {
   return {
     text: textInput.value,
@@ -25,7 +21,6 @@ function captureSettings() {
   };
 }
 
-// Dessine le texte avec effet variation
 function drawTextOnPathWithVariation(d, settings) {
   const id = `path-${Date.now()}`;
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -34,17 +29,15 @@ function drawTextOnPathWithVariation(d, settings) {
   path.setAttribute("fill", "none");
   svg.appendChild(path);
 
-  const baseText = (settings.text + " ").repeat(100).slice(0, 500);
-
+  const baseText = (settings.text + " ").repeat(100).slice(0,500);
   const textPath = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
   textPath.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", `#${id}`);
   textPath.setAttribute("startOffset", "0%");
 
   for (let i = 0; i < baseText.length; i += 2) {
     const span = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-    const scale = 0.8 + Math.random() * 0.6;
-    span.setAttribute("font-size", (settings.size * scale).toFixed(1));
-    span.textContent = baseText[i] + (baseText[i + 1] || '');
+    span.setAttribute("font-size", (settings.size * (0.8 + Math.random() * 0.6)).toFixed(1));
+    span.textContent = baseText[i] + (baseText[i+1] || '');
     textPath.appendChild(span);
   }
 
@@ -56,140 +49,97 @@ function drawTextOnPathWithVariation(d, settings) {
   svg.appendChild(text);
 }
 
-// Génération de formes prédéfinies
 function generateShape(type) {
-  const { width, height } = svg.getBoundingClientRect();
-  const cx = Math.random() * width;
-  const cy = Math.random() * height;
-  
-  switch (type) {
+  const {width, height} = svg.getBoundingClientRect();
+  const cx = Math.random() * width, cy = Math.random() * height;
+  switch(type) {
     case "serpent":
-      // serpentine
-      let d = "";
-      let x = cx - 150;
-      let y = cy - 100;
-      let dir = 1;
-      for (let i = 0; i < 12; i++) {
-        d += i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-        x += 100 * dir;
-        if (x > width - 100 || x < 100) {
-          dir *= -1;
-          y += 80;
-        }
+      let d = "", x=cx-150, y=cy-100, dir=1;
+      for(let i=0;i<12;i++){
+        d += (i===0?`M ${x} ${y}`:`L ${x} ${y}`);
+        x += 100*dir;
+        if(x>width-100||x<100){dir*=-1; y+=80;}
       }
       return d;
     case "spirale":
-      let spiral = "";
-      for (let i = 0, a = 0; i < 300; i++) {
-        const r = 0.5 * i;
-        const xx = cx + r * Math.cos(a);
-        const yy = cy + r * Math.sin(a);
-        spiral += i === 0 ? `M ${xx} ${yy}` : `L ${xx} ${yy}`;
-        a += 0.15;
+      let spiral="", a=0;
+      for(let i=0;i<300;i++){
+        const r=0.5*i, xx=cx+r*Math.cos(a), yy=cy+r*Math.sin(a);
+        spiral += (i===0?`M ${xx} ${yy}`:`L ${xx} ${yy}`);
+        a+=0.15;
       }
       return spiral;
-    case "cercle":
-      return `M ${cx + 100} ${cy} A 100 100 0 1 1 ${cx - 100} ${cy} A 100 100 0 1 1 ${cx + 100} ${cy}`;
-    case "rectangle":
-      return `M ${cx - 100} ${cy - 50} H ${cx + 100} V ${cy + 50} H ${cx - 100} Z`;
-    case "vague":
-      return `M ${cx - 200} ${cy} Q ${cx - 150} ${cy - 40}, ${cx - 100} ${cy} T ${cx} ${cy} T ${cx + 100} ${cy} T ${cx + 200} ${cy}`;
-    case "coeur":
-      return `M ${cx} ${cy} C ${cx - 50} ${cy - 80}, ${cx - 150} ${cy - 10}, ${cx} ${cy + 100} C ${cx + 150} ${cy - 10}, ${cx + 50} ${cy - 80}, ${cx} ${cy}`;
-    case "etoile":
-      return `M ${cx} ${cy - 100} L ${cx + 30} ${cy - 30} L ${cx + 100} ${cy - 30} L ${cx + 50} ${cy + 20}
-              L ${cx + 70} ${cy + 100} L ${cx} ${cy + 50} L ${cx - 70} ${cy + 100} L ${cx - 50} ${cy + 20}
-              L ${cx - 100} ${cy - 30} L ${cx - 30} ${cy - 30} Z`;
-    case "infini":
-      return `M ${cx - 100} ${cy} C ${cx - 150} ${cy - 50}, ${cx - 50} ${cy - 50}, ${cx} ${cy}
-              C ${cx + 50} ${cy + 50}, ${cx + 150} ${cy + 50}, ${cx + 100} ${cy}
-              C ${cx + 50} ${cy - 50}, ${cx - 50} ${cy + 50}, ${cx - 100} ${cy}`;
-    case "zigzag":
-      return `M ${cx - 100} ${cy} L ${cx - 75} ${cy - 40} L ${cx - 50} ${cy} L ${cx - 25} ${cy - 40}
-              L ${cx} ${cy} L ${cx + 25} ${cy - 40} L ${cx + 50} ${cy}`;
-    default:
-      return "";
+    case "cercle": return `M ${cx+100} ${cy} A 100 100 0 1 1 ${cx-100} ${cy} A 100 100 0 1 1 ${cx+100} ${cy}`;
+    case "rectangle": return `M ${cx-100} ${cy-50} H ${cx+100} V ${cy+50} H ${cx-100} Z`;
+    case "vague": return `M ${cx-200} ${cy} Q ${cx-150} ${cy-40}, ${cx-100} ${cy} T ${cx} ${cy} T ${cx+100} ${cy} T ${cx+200} ${cy}`;
+    case "coeur": return `M ${cx} ${cy} C ${cx-50} ${cy-80}, ${cx-150} ${cy-10}, ${cx} ${cy+100} C ${cx+150} ${cy-10}, ${cx+50} ${cy-80}, ${cx} ${cy}`;
+    case "etoile": return `M ${cx} ${cy-100} L ${cx+30} ${cy-30} L ${cx+100} ${cy-30} L ${cx+50} ${cy+20} L ${cx+70} ${cy+100} L ${cx} ${cy+50} L ${cx-70} ${cy+100} L ${cx-50} ${cy+20} L ${cx-100} ${cy-30} L ${cx-30} ${cy-30} Z`;
+    case "infini": return `M ${cx-100} ${cy} C ${cx-150} ${cy-50}, ${cx-50} ${cy-50}, ${cx} ${cy} C ${cx+50} ${cy+50}, ${cx+150} ${cy+50}, ${cx+100} ${cy} C ${cx+50} ${cy-50}, ${cx-50} ${cy+50}, ${cx-100} ${cy}`;
+    case "zigzag": return `M ${cx-100} ${cy} L ${cx-75} ${cy-40} L ${cx-50} ${cy} L ${cx-25} ${cy-40} L ${cx} ${cy} L ${cx+25} ${cy-40} L ${cx+50} ${cy}`;
   }
 }
 
-// Fonction de dessin (souris ou doigt)
-function handleDraw(x, y) {
+function handleDraw(x,y){
   const now = Date.now();
-  if (now - lastDrawTime < 30) return;
+  if(now - lastDrawTime < 30) return;
   lastDrawTime = now;
 
-  currentPoints.push({ x, y });
-
-  if (!currentPathElement) {
-    currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    currentPathElement.setAttribute("fill", "none");
-    currentPathElement.setAttribute("stroke", "rgba(0,0,0,0.1)");
+  currentPoints.push({x,y});
+  if(!currentPathElement){
+    currentPathElement = document.createElementNS("http://www.w3.org/2000/svg","path");
+    currentPathElement.setAttribute("fill","none");
+    currentPathElement.setAttribute("stroke","rgba(0,0,0,0.1)");
     svg.appendChild(currentPathElement);
   }
 
-  const d = `M ${currentPoints.map(p => `${p.x},${p.y}`).join(" L ")}`;
+  const d = 'M ' + currentPoints.map(p=>`${p.x},${p.y}`).join(' L ');
   currentPathElement.setAttribute("d", d);
 
   clearTimeout(drawingTimeout);
-  drawingTimeout = setTimeout(() => {
+  drawingTimeout = setTimeout(()=>{
     const finalD = currentPathElement.getAttribute("d");
     currentPathElement.remove();
     drawTextOnPathWithVariation(finalD, captureSettings());
     currentPathElement = null;
     currentPoints = [];
-  }, 300);
+  },300);
 }
 
-// Événements de dessin
-svg.addEventListener("mousemove", (e) => {
-  if (modeSelect.value !== "souris") return;
-  const rect = svg.getBoundingClientRect();
-  handleDraw(e.clientX - rect.left, e.clientY - rect.top);
+svg.addEventListener("mousemove", e => {
+  if(modeSelect.value==="souris"){
+    const r=svg.getBoundingClientRect();
+    handleDraw(e.clientX - r.left, e.clientY - r.top);
+  }
 });
+svg.addEventListener("touchmove", e => {
+  if(modeSelect.value==="souris"){
+    e.preventDefault();
+    const r=svg.getBoundingClientRect(), t=e.touches[0];
+    handleDraw(t.clientX - r.left, t.clientY - r.top);
+  }
+},{passive:false});
 
-svg.addEventListener("touchmove", (e) => {
-  if (modeSelect.value !== "souris") return;
-  e.preventDefault();
-  const rect = svg.getBoundingClientRect();
-  const touch = e.touches[0];
-  handleDraw(touch.clientX - rect.left, touch.clientY - rect.top);
-}, { passive: false });
-
-// Boutons actions
-generateBtn.onclick = () => {
-  if (modeSelect.value !== "forme") return;
-  const d = generateShape(shapeSelect.value);
-  drawTextOnPathWithVariation(d, captureSettings());
+generateBtn.onclick = ()=> {
+  if(modeSelect.value==="forme"){
+    drawTextOnPathWithVariation(generateShape(shapeSelect.value), captureSettings());
+  }
 };
-
-clearBtn.onclick = () => {
-  svg.innerHTML = '';
-  currentPoints = [];
-  currentPathElement = null;
-};
-
-exportBtn.onclick = () => {
-  const svgData = new XMLSerializer().serializeToString(svg);
-  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+clearBtn.onclick = ()=> { svg.innerHTML=''; currentPoints=[]; currentPathElement=null; };
+exportBtn.onclick = ()=>{
+  const data = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob([data], {type:"image/svg+xml;charset=utf-8"});
   const link = document.createElement("a");
-  link.href = url;
+  link.href = URL.createObjectURL(blob);
   link.download = "poesie-visuelle.svg";
   link.click();
-  URL.revokeObjectURL(url);
 };
-
-saveBtn.onclick = () => {
-  const svgData = new XMLSerializer().serializeToString(svg);
-  const compositions = JSON.parse(localStorage.getItem("compositions") || "[]");
-  compositions.push({
-    svg: svgData,
-    timestamp: Date.now()
-  });
-  localStorage.setItem("compositions", JSON.stringify(compositions));
+saveBtn.onclick = ()=>{
+  const data = new XMLSerializer().serializeToString(svg);
+  const arr = JSON.parse(localStorage.getItem("compositions")||"[]");
+  arr.push({svg:data, timestamp:Date.now()});
+  localStorage.setItem("compositions", JSON.stringify(arr));
   alert("Composition sauvegardée dans l'archive.");
 };
-
-modeSelect.addEventListener("change", () => {
-  generateBtn.style.display = modeSelect.value === "forme" ? "block" : "none";
+modeSelect.addEventListener("change",()=>{
+  generateBtn.style.display = modeSelect.value==="forme" ? "block" : "none";
 });
