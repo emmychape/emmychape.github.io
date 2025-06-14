@@ -151,3 +151,8 @@ body {
     max-height: calc(80vh - 20px);
   }
 }
+#panelContent {
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
