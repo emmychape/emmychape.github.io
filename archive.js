@@ -74,13 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
         svgEl.removeAttribute("width");
         svgEl.removeAttribute("height");
         svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
         svgEl.style.width = "100%";
-        svgEl.style.height = "100%";
-        svgEl.style.maxHeight = "100%";
-        svgEl.style.maxWidth = "100%";
+        svgEl.style.height = "auto";
         svgEl.style.display = "block";
-        svgEl.style.margin = "0 auto";
+        svgEl.style.margin = "auto";
       }
 
       modal.classList.remove("hidden");
