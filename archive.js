@@ -62,25 +62,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       modalSvgContainer.innerHTML = comp.svg;
-      const svgEl = modalSvgContainer.querySelector("svg");
-      if (svgEl) {
-        if (!svgEl.getAttribute("viewBox")) {
-          const width = svgEl.getAttribute("width") || "1000";
-          const height = svgEl.getAttribute("height") || "1000";
-          svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
-        }
+    const svgEl = modalSvgContainer.querySelector("svg");
+if (svgEl) {
+  if (!svgEl.getAttribute("viewBox")) {
+    const width = svgEl.getAttribute("width") || "1000";
+    const height = svgEl.getAttribute("height") || "1000";
+    svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  }
 
-        svgEl.removeAttribute("width");
-        svgEl.removeAttribute("height");
-        svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svgEl.removeAttribute("width");
+  svgEl.removeAttribute("height");
+  svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
-        svgEl.style.width = "100%";
-        svgEl.style.height = "auto";
-        svgEl.style.maxWidth = "100%";
-        svgEl.style.maxHeight = "100%";
-        svgEl.style.display = "block";
-        svgEl.style.margin = "auto";
-      }
+  svgEl.style.width = "100vw";
+  svgEl.style.height = "100vh";
+  svgEl.style.display = "block";
+  svgEl.style.margin = "0 auto";
+}
 
       modal.classList.remove("hidden");
 
