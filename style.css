@@ -117,7 +117,7 @@ select {
   touch-action: none;
 }
 
-/* ===== ARCHIVE PAGE ===== */
+/* — Archive page — */
 
 .archive-body {
   background: #f5f5f5;
@@ -247,6 +247,7 @@ body.delete-mode .grid-item {
   max-height: 100%;
   display: block;
   margin: auto;
+  object-fit: contain;
 }
 
 .modal-close {
@@ -280,7 +281,7 @@ body.delete-mode .grid-item {
   opacity: 1;
 }
 
-/* ===== RESPONSIVE ===== */
+/* — Responsive mobiles — */
 
 @media (max-width: 768px) {
   #panel {
